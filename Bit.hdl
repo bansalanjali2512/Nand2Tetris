@@ -14,6 +14,8 @@ CHIP Bit {
     OUT out;
 
     PARTS:
+
 	Mux(a=prevout, b=in, sel=load, out=muxout);
+	//Primitive D-Flip-Flop
     DFF(in=muxout, out=prevout, out=out);
 }
