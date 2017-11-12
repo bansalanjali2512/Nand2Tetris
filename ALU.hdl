@@ -42,33 +42,37 @@ CHIP ALU {
         ng; // 1 if (out < 0),  0 otherwise
 
     PARTS:
-    // Put you code here:
+    
+    //Negate x and y
     Not16(in=x, out=notx);
     Not16(in=y, out=noty);
+
+    //Selecting 1 input as output out of 4 using selection inputs
     Mux4Way16(a=x, b=notx, c=false, d=true, sel[0]=zx, sel[1]=nx, out=xprod);
     Mux4Way16(a=y, b=noty, c=false, d=true, sel[0]=zy, sel[1]=ny, out=yprod);
     
-	
+	//Bitwise and xprod & yprod
 	And16(a=xprod,b=yprod,out=andxy);
+
+	//Bitwise add xprod & yprod
 	Add16(a=xprod,b=yprod,out=addxy);
 	
-	
-	
-    Not16(in=andxy, out=notandxy);
-    Not16(in=addxy, out=notaddxy);
-	//Mux4(a=andxy, b=notandxy, c=addxy, d=notaddxy, sel[0]=f, sel[1]=no, out=out);
-	
+	//if f==0 select andxy
+	//if f==1 select addxy
 	Mux16(a=andxy, b=addxy, sel=f, out=tempout);
+
+    //if n==0 out=out
+    //if n==1 out=!out
 	Not16(in=tempout, out=nottempout);
-	Mux16(a=tempout, b=nottempout, sel=no, out[0..7]=outlow, out[8..15]=outhigh, out[15]=s);
+	Mux16(a=tempout, b=nottempout, sel=no, out=out, out[0..7]=outlow, out[8..15]=outhigh, out[15]=signbit);
 	
-	//Mux(a=addxy, b=notaddxy, sel=f, out=out2);
-	//Mux(a=out1, b=out2, sel=no, out=out);
-	Mux(a=false, b=true, sel=s, out=ng);
+	//set ng = 1 if out[15] is 1
+	And(a=true, b=signbit, out=ng);
+
+    //to set zr
 	Or8Way(in = outlow, out=loweror);
 	Or8Way(in = outhigh, out=upperor);
 	Or(a = loweror, b = upperor, out = notzr);
 	Not(in = notzr, out = zr);
-	Mux16(a=tempout, b=nottempout, sel=no, out=out);
-	
+
 }
