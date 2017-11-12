@@ -16,12 +16,19 @@ CHIP PC {
     OUT out[16];
 
     PARTS:
+    
+    //increment and store result in incout
+    Inc16(in=prevout, out=incout);
 
-    Inc16(in=feedback, out=incout);
+    //if inc is set out incout
+    Mux16(a=prevout, b=incout, sel=inc, out=out1);
 
-    Mux16(a=feedback, b=incout, sel=inc, out=m1);
-    Mux16(a=m1, b=in, sel=load, out=m2);
-    Mux16(a=m2, b=false, sel=reset, out=m3);
+    //if load is 1 out=in else out=out1
+    Mux16(a=out1, b=in, sel=load, out=out2);
 
-    Register(in=m3, load=true, out=feedback, out=out);
+    //if reset=1 out=0 else out=out2
+    Mux16(a=out2, b=false, sel=reset, out=out3);
+
+    Register(in=out3, load=true, out=prevout, out=out);
+
 }
